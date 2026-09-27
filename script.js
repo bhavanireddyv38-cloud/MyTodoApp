@@ -7,76 +7,134 @@ let addButton =
 let taskList =
     document.getElementById("taskList");
 
-let clearButton = 
+let clearButton =
     document.getElementById("clearButton");
 
+
+function saveTasks() {
+    localStorage.setItem("todo", taskList.innerHTML);
+}
+
+
+function addTask(task) {
+
+    let li = document.createElement("li");
+
+    let taskText = document.createElement("span");
+    taskText.textContent = task;
+
+    li.appendChild(taskText);
+
+
+    // Edit button
+    let editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.style.marginLeft = "10px";
+
+    li.appendChild(editButton);
+
+
+    // Delete button
+    let deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.style.marginLeft = "10px";
+
+    li.appendChild(deleteButton);
+
+
+    // Complete / incomplete task
+    li.addEventListener("click", function(event) {
+
+        if (event.target === taskText) {
+
+            if (li.style.textDecoration === "line-through") {
+                li.style.textDecoration = "none";
+            } else {
+                li.style.textDecoration = "line-through";
+            }
+
+            saveTasks();
+        }
+    });
+
+
+    // Edit button
+    editButton.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        let editInput = document.createElement("input");
+
+        editInput.type = "text";
+        editInput.value = taskText.textContent;
+
+        li.replaceChild(editInput, taskText);
+
+        editButton.textContent = "Save";
+
+
+        editButton.onclick = function(event) {
+
+            event.stopPropagation();
+
+            if (editInput.value.trim() !== "") {
+
+                taskText.textContent = editInput.value;
+
+                li.replaceChild(taskText, editInput);
+
+                editButton.textContent = "Edit";
+
+                saveTasks();
+            }
+        };
+    });
+
+
+    // Delete button
+    deleteButton.addEventListener("click", function(event) {
+
+        event.stopPropagation();
+
+        li.remove();
+
+        saveTasks();
+    });
+
+
+    taskList.appendChild(li);
+
+    saveTasks();
+}
+
+
+// Add Task
 addButton.addEventListener("click", function() {
-    let task = input.value;
+
+    let task = input.value.trim();
 
     if (task === "") {
         return;
     }
 
-    let li = document.createElement("li");
+    addTask(task);
 
-    li.textContent = task;
-
-    taskList.appendChild(li);
-
-    let deleteButton =
-        document.createElement("button");
-
-    deleteButton.textContent = "Delete";
-
-    li.appendChild(deleteButton);
-
-    deleteButton.style.marginLeft = " 10px";
-
-    li.addEventListener("click", function () {
-        if (li.style.textDecoration === "line-through") {
-            li.style.textDecoration = "none";
-        } else {
-            li.style.textDecoration = "line-through";
-        }
-        localStorage.setItem ("todo", tasklist.innerHTML);
-    });
-
-    deleteButton.addEventListener("click", function () {
-        li.remove();
-    });
     input.value = "";
-
-    localStorage.setItem("todo", taskList.innerHTML);
 });
 
-taskList.innerHTML = localStorage.getItem("todo") || "";
 
-let savedButtons = taskList.querySelectorAll("button");
-
-savedButtons.forEach(function(button) {
-    button.addEventListener("click", function() {
-        button.parentElement.remove();
-        localStorage.setItem("todo", taskList.innerHTML);
-    });
-});
-
-let savedTasks = taskList.querySelectorAll("li");
-
-savedTasks.forEach(function(li) {
-    li.addEventListener("click", function() {
-        if (li.style.textDecoration === "line-through") {
-            li.style.textDecoration = "none";
-        } else {
-            li.style.textDecoration = "line-through";
-        }
-    });
-});
+// Clear All
 clearButton.addEventListener("click", function() {
+
     taskList.innerHTML = "";
+
     localStorage.removeItem("todo");
 });
 
+
+// Enter key
 input.addEventListener("keydown", function(event) {
+
     if (event.key === "Enter") {
         addButton.click();
     }
