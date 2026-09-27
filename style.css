@@ -79,3 +79,50 @@ li {
     align-items: center;
     justify-content: space-between;
 }
+
+#taskInput {
+    margin-right: 10px;
+}
+
+#addButton {
+    margin-right: 10px;
+}
+
+#clearButton {
+    margin-left: 0;
+}
+
+body > div {
+    margin-top: 12px;
+}
+
+body > div button {
+    margin: 0 5px;
+}
+
+.menu-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#menuButton {
+    padding: 8px 15px;
+    cursor: pointer;
+}
+
+#menuOptions {
+    display: none;
+    position: fixed;
+    left: 10px;
+    top: 300px;
+    background: white;
+    padding: 5px;
+    z-index: 1000;
+}
+
+#menuOptions button {
+    display: block;
+    margin: 5px 0;
+    width: 120px;
+}

@@ -1,160 +1,179 @@
-let input =
-    document.getElementById("taskInput");
+let input = document.getElementById("taskInput");
+let addButton = document.getElementById("addButton");
+let taskList = document.getElementById("taskList");
+let clearButton = document.getElementById("clearButton");
 
-let addButton =
-    document.getElementById("addButton");
+let showAllButton = document.getElementById("showAllButton");
+let pendingButton = document.getElementById("pendingButton");
+let completedButton = document.getElementById("completedButton");
 
-let taskList =
-    document.getElementById("taskList");
-
-let clearButton =
-    document.getElementById("clearButton");
-
-let showAllButton =
-    document.getElementById("showAllButton");
-
-let pendingButton =
-    document.getElementById("pendingButton");
-
-let completedButton =
-    document.getElementById("completedButton");
+let menuButton = document.getElementById("menuButton");
+let menuOptions = document.getElementById("menuOptions");
 
 
+// Load saved tasks safely
+let tasks = [];
 
-function saveTasks() {
-    localStorage.setItem("todo", taskList.innerHTML);
+try {
+    let savedTasks = localStorage.getItem("todo");
+
+    if (savedTasks) {
+        let data = JSON.parse(savedTasks);
+
+        if (Array.isArray(data)) {
+            tasks = data;
+        }
+    }
+} catch (error) {
+    tasks = [];
 }
 
 
-function addTask(task) {
-
-    let li = document.createElement("li");
-
-    let checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-
-    li.appendChild(checkbox);
-
-    let taskText = document.createElement("span");
-    taskText.textContent = task;
-
-    li.appendChild(taskText);
-
-    checkbox.addEventListener("change", function() {
-
-    if (checkbox.checked) {
-        li.style.textDecoration = "line-through";
-    } else {
-        li.style.textDecoration = "none";
-    }
-
-    saveTasks();
-});
+// Save tasks
+function saveTasks() {
+    localStorage.setItem("todo", JSON.stringify(tasks));
+}
 
 
-    // Edit button
-    let editButton = document.createElement("button");
-    editButton.textContent = "Edit";
-    editButton.style.marginLeft = "10px";
+// Display tasks
+function displayTasks(filter = "all") {
 
-    li.appendChild(editButton);
+    taskList.innerHTML = "";
+
+    tasks.forEach(function(task, index) {
+
+        // Filter
+        if (filter === "pending" && task.completed) {
+            return;
+        }
+
+        if (filter === "completed" && !task.completed) {
+            return;
+        }
 
 
-    // Delete button
-    let deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete";
-    deleteButton.style.marginLeft = "10px";
-
-    li.appendChild(deleteButton);
+        let li = document.createElement("li");
 
 
-    // Complete / incomplete task
-    li.addEventListener("click", function(event) {
+        // Checkbox
+        let checkbox = document.createElement("input");
 
-        if (event.target === taskText) {
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
 
-            if (li.style.textDecoration === "line-through") {
-                li.style.textDecoration = "none";
+        li.appendChild(checkbox);
+
+
+        // Task text
+        let taskText = document.createElement("span");
+
+        taskText.textContent = task.text;
+
+        taskText.style.marginLeft = "5px";
+
+        if (task.completed) {
+            taskText.style.textDecoration = "line-through";
+        }
+
+        li.appendChild(taskText);
+
+
+        // Checkbox action
+        checkbox.addEventListener("change", function() {
+
+            task.completed = checkbox.checked;
+
+            if (checkbox.checked) {
+                taskText.style.textDecoration = "line-through";
             } else {
-                li.style.textDecoration = "line-through";
+                taskText.style.textDecoration = "none";
             }
 
             saveTasks();
-        }
-    });
+        });
 
 
-    // Edit button
-    editButton.addEventListener("click", function(event) {
+        // Edit button
+        let editButton = document.createElement("button");
 
-        event.stopPropagation();
+        editButton.textContent = "Edit";
+        editButton.style.marginLeft = "10px";
 
-        let editInput = document.createElement("input");
-
-        editInput.type = "text";
-        editInput.value = taskText.textContent;
-
-        li.replaceChild(editInput, taskText);
-
-        editButton.textContent = "Save";
+        li.appendChild(editButton);
 
 
-        editButton.onclick = function(event) {
+        editButton.addEventListener("click", function() {
 
-            event.stopPropagation();
+            if (editButton.textContent === "Edit") {
 
-            if (editInput.value.trim() !== "") {
+                let editInput = document.createElement("input");
 
-                taskText.textContent = editInput.value;
+                editInput.type = "text";
+                editInput.value = task.text;
 
-                li.replaceChild(taskText, editInput);
+                li.replaceChild(editInput, taskText);
 
-                editButton.textContent = "Edit";
+                editButton.textContent = "Save";
 
-                saveTasks();
+            } else {
+
+                let newText = li.querySelector("input[type='text']").value.trim();
+
+                if (newText !== "") {
+
+                    task.text = newText;
+
+                    saveTasks();
+
+                    displayTasks();
+                }
             }
-        };
+        });
+
+
+        // Delete button
+        let deleteButton = document.createElement("button");
+
+        deleteButton.textContent = "Delete";
+        deleteButton.style.marginLeft = "10px";
+
+        li.appendChild(deleteButton);
+
+
+        deleteButton.addEventListener("click", function() {
+
+            tasks.splice(index, 1);
+
+            saveTasks();
+
+            displayTasks();
+        });
+
+
+        taskList.appendChild(li);
     });
-
-
-    // Delete button
-    deleteButton.addEventListener("click", function(event) {
-
-        event.stopPropagation();
-
-        li.remove();
-
-        saveTasks();
-    });
-
-
-    taskList.appendChild(li);
-
-    saveTasks();
 }
 
 
 // Add Task
 addButton.addEventListener("click", function() {
 
-    let task = input.value.trim();
+    let taskText = input.value.trim();
 
-    if (task === "") {
+    if (taskText === "") {
         return;
     }
 
-    addTask(task);
+    tasks.push({
+        text: taskText,
+        completed: false
+    });
+
+    saveTasks();
+
+    displayTasks();
 
     input.value = "";
-});
-
-
-// Clear All
-clearButton.addEventListener("click", function() {
-
-    taskList.innerHTML = "";
-
-    localStorage.removeItem("todo");
 });
 
 
@@ -166,45 +185,46 @@ input.addEventListener("keydown", function(event) {
     }
 });
 
-showAllButton.addEventListener("click",function()
-{
 
-    let tasks=taskList.querySelectorAll("li");
+// Clear All
+clearButton.addEventListener("click", function() {
 
-    tasks.forEach(function(task){
-        task.style.display="list-item";
-    });
+    tasks = [];
 
+    saveTasks();
+
+    displayTasks();
 });
 
-pendingButton.addEventListener("click",function(){
 
-    let tasks=taskList.querySelectorAll("li");
-
-    tasks.forEach(function(task){
-
-        let checkbox=task.querySelector("input");
-
-        if (checkbox.checked){
-            task.style.display="none";
-        }else{
-            task.style.display="list-item";
-        }
-    });
+// Show All
+showAllButton.addEventListener("click", function() {
+    displayTasks("all");
 });
 
-completedButton.addEventListener("click",function(){
 
-    let tasks = taskList.querySelectorAll("li");
-
-    tasks.forEach(function(task){
-
-        let checkbox=task.querySelector("input");
-
-        if(checkbox.checked){
-            task.style.display="list-item";
-        }else{
-            task.style.display="none";
-        }
-    });
+// Pending
+pendingButton.addEventListener("click", function() {
+    displayTasks("pending");
 });
+
+
+// Completed
+completedButton.addEventListener("click", function() {
+    displayTasks("completed");
+});
+
+
+// Menu
+menuButton.addEventListener("click", function() {
+
+    if (menuOptions.style.display === "block") {
+        menuOptions.style.display = "none";
+    } else {
+        menuOptions.style.display = "block";
+    }
+});
+
+
+// Display saved tasks when page opens
+displayTasks();
