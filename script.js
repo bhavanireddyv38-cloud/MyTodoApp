@@ -10,6 +10,16 @@ let taskList =
 let clearButton =
     document.getElementById("clearButton");
 
+let showAllButton =
+    document.getElementById("showAllButton");
+
+let pendingButton =
+    document.getElementById("pendingButton");
+
+let completedButton =
+    document.getElementById("completedButton");
+
+
 
 function saveTasks() {
     localStorage.setItem("todo", taskList.innerHTML);
@@ -20,10 +30,26 @@ function addTask(task) {
 
     let li = document.createElement("li");
 
+    let checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+
+    li.appendChild(checkbox);
+
     let taskText = document.createElement("span");
     taskText.textContent = task;
 
     li.appendChild(taskText);
+
+    checkbox.addEventListener("change", function() {
+
+    if (checkbox.checked) {
+        li.style.textDecoration = "line-through";
+    } else {
+        li.style.textDecoration = "none";
+    }
+
+    saveTasks();
+});
 
 
     // Edit button
@@ -138,4 +164,47 @@ input.addEventListener("keydown", function(event) {
     if (event.key === "Enter") {
         addButton.click();
     }
+});
+
+showAllButton.addEventListener("click",function()
+{
+
+    let tasks=taskList.querySelectorAll("li");
+
+    tasks.forEach(function(task){
+        task.style.display="list-item";
+    });
+
+});
+
+pendingButton.addEventListener("click",function(){
+
+    let tasks=taskList.querySelectorAll("li");
+
+    tasks.forEach(function(task){
+
+        let checkbox=task.querySelector("input");
+
+        if (checkbox.checked){
+            task.style.display="none";
+        }else{
+            task.style.display="list-item";
+        }
+    });
+});
+
+completedButton.addEventListener("click",function(){
+
+    let tasks = taskList.querySelectorAll("li");
+
+    tasks.forEach(function(task){
+
+        let checkbox=task.querySelector("input");
+
+        if(checkbox.checked){
+            task.style.display="list-item";
+        }else{
+            task.style.display="none";
+        }
+    });
 });
